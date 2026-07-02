@@ -57,7 +57,6 @@ const footerRoutes = require('./src/routes/footerRoutes');
 
 // Initialize Express app
 const app = express();
-
 // Middleware
 // app.use(cors({
 //   origin: process.env.FRONTEND_URL || 'http://localhost:3000',

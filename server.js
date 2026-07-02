@@ -68,6 +68,7 @@ const allowedOrigins = [
   'https://smartproductbuy.com',
    'http://localhost:3000',
    'https://incomparable-malabi-9958a8.netlify.app',
+   'https://glistening-duckanoo-a22152.netlify.app',
 
   'http://localhost:3001',
   'http://localhost:5000',

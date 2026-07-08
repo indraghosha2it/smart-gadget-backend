@@ -1,5 +1,5 @@
 
-// // module.exports = mongoose.model('Product', productSchema);
+// // backend/src/models/Product.js
 // const mongoose = require('mongoose');
 
 // // Counter Schema for sequential SKU generation
@@ -88,7 +88,7 @@
 //   }]
 // });
 
-// // Main Product Schema (Toy Product)
+// // Main Product Schema (Smart Gadget Product)
 // const productSchema = new mongoose.Schema({
 //   // Basic Information
 //   productName: {
@@ -105,8 +105,8 @@
 //   },
 //   shortDescription: {
 //     type: String,
-//     required: [true, 'Short description is required'],
-//     trim: true
+//     trim: true,
+//     default: ''
 //   },
 //   fullDescription: {
 //     type: String,
@@ -141,16 +141,11 @@
 //     trim: true
 //   },
 
-//   // Brand & Age
+//   // Brand
 //   brand: {
 //     type: String,
 //     required: [true, 'Brand is required'],
 //     trim: true
-//   },
-//   ageGroup: {
-//     type: String,
-//     required: false,
-//     enum: ['0-2', '3-5', '6-10', '11-14', '']
 //   },
 
 //   // Pricing
@@ -164,6 +159,11 @@
 //     default: 0,
 //     min: [0, 'Discount price cannot be negative']
 //   },
+//   costPerItem: {
+//     type: Number,
+//     default: 0,
+//     min: [0, 'Cost per item cannot be negative']
+//   },
   
 //   // Inventory
 //   stockQuantity: {
@@ -172,29 +172,42 @@
 //     default: 0,
 //     min: [0, 'Stock quantity cannot be negative']
 //   },
+//   stockAlertQuantity: {
+//     type: Number,
+//     default: 0,
+//     min: [0, 'Stock alert quantity cannot be negative']
+//   },
 //   skuCode: {
 //     type: String,
 //     unique: true,
 //     sparse: true
 //   },
-// barcode: {
-//   type: String,
-//   unique: true,
-//   sparse: true,
-//   trim: true,
-//   index: true,
-//   match: [/^[0-9]{8,13}$/, 'Barcode must be 8-13 digits only']
-// },
+//   barcode: {
+//     type: String,
+//     unique: true,
+//     sparse: true,
+//     trim: true,
+//     index: true,
+//     match: [/^[0-9]{8,13}$/, 'Barcode must be 8-13 digits only']
+//   },
+
+//   // Unit
+//   unit: {
+//     type: String,
+//     required: [true, 'Unit is required'],
+//     default: 'pcs'
+//   },
+
+//   // Colors
+//   colors: [{
+//     type: String,
+//     trim: true
+//   }],
 
 //   // Delivery
 //   deliveryInfo: {
 //     type: String,
-//     required: [true, 'Delivery information is required'],
-//     trim: true
-//   },
-//   codAvailable: {
-//     type: Boolean,
-//     default: false
+//     default: ''
 //   },
 
 //   // Media
@@ -212,37 +225,17 @@
 //       default: false
 //     }
 //   }],
-//   videoUrl: {
-//     type: String,
-//     default: ''
-//   },
-//   videoPublicId: {
-//     type: String,
-//     default: ''
-//   },
-//   videoType: {
-//     type: String,
-//     enum: ['upload', 'youtube'],
-//     default: 'upload'
-//   },
 
 //   // Tags & Promotions
 //   tags: [{
 //     type: String,
-//     enum: [
-//       'Best Seller', 'New Arrival', 'Limited Edition', 'Eco-Friendly',
-//       'Educational', 'STEM Toy', 'Montessori', 'Creative Play',
-//       'Outdoor Fun', 'Battery Included', 'Non-Toxic', 'Award Winner',
-//       'Musical Toy', 'Interactive', 'Light Up', 'Remote Control',
-//       'Building Set', 'Puzzle Game', 'Art & Craft', 'Pretend Play'
-//     ]
+//     enum: ['Best Seller', 'Trending', 'New Release', 'Limited Offer', 'Flash Sale', 'Clearance']
 //   }],
-//   promotion: {
-//     type: String,
-//     enum: ['flash-sale', 'new-arrival', 'trending', 'clearance', 'holiday-special', 'bundle-deal', 'limited-stock', ''],
-//     default: ''
-//   },
 //   isFeatured: {
+//     type: Boolean,
+//     default: false
+//   },
+//   showOnBanner: {
 //     type: Boolean,
 //     default: false
 //   },
@@ -308,108 +301,8 @@
 //   timestamps: true
 // });
 
-// // SINGLE PRE-SAVE HOOK - NO next PARAMETER
-
-// // productSchema.pre('save', async function() {
-// //   // 1. Generate slug
-// //   if (this.isModified('productName')) {
-// //     this.slug = this.productName
-// //       .toLowerCase()
-// //       .replace(/[^a-z0-9]+/g, '-')
-// //       .replace(/(^-|-$)+/g, '');
-// //   }
-  
-// //   // 2. Initialize metaSettings
-// //   if (!this.metaSettings) {
-// //     this.metaSettings = {};
-// //   }
-  
-// //   // 3. Generate sequential SKU
-// //   if (!this.skuCode || this.isNew) {
-// //     try {
-// //       const basePrefix = 'TOY';
-// //       const timestamp = Date.now().toString().slice(0, 5);
-// //       const counterId = `${basePrefix}_${timestamp}`;
-      
-// //       const counter = await Counter.findByIdAndUpdate(
-// //         counterId,
-// //         { $inc: { sequence_value: 1 } },
-// //         { new: true, upsert: true }
-// //       );
-      
-// //       const sequenceNumber = 900 + counter.sequence_value;
-// //       this.skuCode = `${basePrefix}-${timestamp}-${sequenceNumber}`;
-      
-// //       console.log(`Generated SKU: ${this.skuCode} for product: ${this.productName}`);
-// //     } catch (error) {
-// //       console.error('Error generating sequential SKU:', error);
-// //       this.skuCode = `TOY-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-// //     }
-// //   }
-  
-// //   // 4. Handle Barcode
-// //   if (this.isModified('barcode')) {
-// //     const Barcode = mongoose.model('Barcode');
-    
-// //     // If there's an old barcode, free it
-// //     if (this._oldBarcode && this._oldBarcode !== this.barcode) {
-// //       await Barcode.findOneAndUpdate(
-// //         { barcodeNumber: this._oldBarcode },
-// //         { productId: null, productSku: '', productName: '', status: 'available' }
-// //       );
-// //     }
-    
-// //     // If new barcode is provided
-// //     if (this.barcode) {
-// //       let barcodeDoc = await Barcode.findOne({ barcodeNumber: this.barcode });
-      
-// //       if (barcodeDoc) {
-// //         if (barcodeDoc.productId && barcodeDoc.productId.toString() !== this._id?.toString()) {
-// //           throw new Error(`Barcode ${this.barcode} is already assigned to another product`);
-// //         }
-        
-// //         barcodeDoc.productId = this._id;
-// //         barcodeDoc.productSku = this.skuCode;
-// //         barcodeDoc.productName = this.productName;
-// //         barcodeDoc.status = 'assigned';
-// //         await barcodeDoc.save();
-// //       } else {
-// //         // Generate barcode image when creating new barcode
-// //         const { generateAndUploadBarcodeImage } = require('../utils/generateBarcodeImage');
-// //         let barcodeImageUrl = '';
-        
-// //         try {
-// //           const result = await generateAndUploadBarcodeImage(this.barcode);
-// //           barcodeImageUrl = result.url;
-// //           console.log(`✅ Generated barcode image for: ${this.barcode}`);
-// //         } catch (imgError) {
-// //           console.error(`Failed to generate barcode image for ${this.barcode}:`, imgError.message);
-// //         }
-        
-// //         barcodeDoc = await Barcode.create({
-// //           barcodeNumber: this.barcode,
-// //           format: 'CODE-128',
-// //           productId: this._id,
-// //           productSku: this.skuCode,
-// //           productName: this.productName,
-// //           status: 'assigned',
-// //           generatedBy: this.createdBy,
-// //           barcodeImageUrl: barcodeImageUrl,
-// //           metadata: {
-// //             prefix: this.barcode.substring(0, 3),
-// //             sequence: parseInt(this.barcode.slice(-6)) || 0
-// //           }
-// //         });
-// //       }
-// //     }
-    
-// //     // Store old barcode for next update
-// //     this._oldBarcode = this.barcode;
-// //   }
-// // });
-
+// // Generate slug before saving
 // productSchema.pre('save', async function() {
-//   // 1. Generate slug
 //   if (this.isModified('productName')) {
 //     this.slug = this.productName
 //       .toLowerCase()
@@ -417,28 +310,22 @@
 //       .replace(/(^-|-$)+/g, '');
 //   }
   
-//   // 2. Initialize metaSettings
+//   // Initialize metaSettings
 //   if (!this.metaSettings) {
 //     this.metaSettings = {};
 //   }
   
-//   // 3. Generate sequential SKU - ONLY if no SKU provided (not on every save)
-//   // Changed from: if (!this.skuCode || this.isNew)
-//   // To: if (!this.skuCode && this.isNew)
-//   // This ensures SKU is only generated when:
-//   // - Product is new AND
-//   // - No SKU was provided from frontend (user wants auto-generation)
+//   // Generate sequential SKU - ONLY if no SKU provided and product is new
 //   if (!this.skuCode && this.isNew) {
 //     try {
-//       // Find the most recent product with a TOY- SKU
+//       // Find the most recent product with a SG- SKU
 //       const lastProduct = await this.constructor.findOne({ 
-//         skuCode: { $regex: /^TOY-/ } 
+//         skuCode: { $regex: /^SG-/ } 
 //       }).sort({ createdAt: -1 });
       
-//       let nextSequence = 901; // Starting sequence number
+//       let nextSequence = 1001;
       
 //       if (lastProduct && lastProduct.skuCode) {
-//         // Extract sequence number from last SKU
 //         const parts = lastProduct.skuCode.split('-');
 //         if (parts.length === 3) {
 //           const lastSeq = parseInt(parts[2]);
@@ -449,81 +336,18 @@
 //       }
       
 //       const timestamp = Date.now().toString().slice(0, 5);
-//       this.skuCode = `TOY-${timestamp}-${nextSequence}`;
+//       this.skuCode = `SG-${timestamp}-${nextSequence}`;
       
-//       // Double-check uniqueness (prevents race conditions in rare cases)
 //       const existing = await this.constructor.findOne({ skuCode: this.skuCode });
 //       if (existing) {
-//         // If somehow exists (extremely rare), add random suffix
-//         this.skuCode = `TOY-${timestamp}-${nextSequence}-${Math.floor(Math.random() * 100)}`;
+//         this.skuCode = `SG-${timestamp}-${nextSequence}-${Math.floor(Math.random() * 100)}`;
 //       }
       
 //       console.log(`Generated SKU: ${this.skuCode} for product: ${this.productName}`);
 //     } catch (error) {
 //       console.error('Error generating SKU:', error);
-//       // Fallback with timestamp + random
-//       this.skuCode = `TOY-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+//       this.skuCode = `SG-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 //     }
-//   }
-  
-//   // 4. Handle Barcode
-//   if (this.isModified('barcode')) {
-//     const Barcode = mongoose.model('Barcode');
-    
-//     // If there's an old barcode, free it
-//     if (this._oldBarcode && this._oldBarcode !== this.barcode) {
-//       await Barcode.findOneAndUpdate(
-//         { barcodeNumber: this._oldBarcode },
-//         { productId: null, productSku: '', productName: '', status: 'available' }
-//       );
-//     }
-    
-//     // If new barcode is provided
-//     if (this.barcode) {
-//       let barcodeDoc = await Barcode.findOne({ barcodeNumber: this.barcode });
-      
-//       if (barcodeDoc) {
-//         if (barcodeDoc.productId && barcodeDoc.productId.toString() !== this._id?.toString()) {
-//           throw new Error(`Barcode ${this.barcode} is already assigned to another product`);
-//         }
-        
-//         barcodeDoc.productId = this._id;
-//         barcodeDoc.productSku = this.skuCode;
-//         barcodeDoc.productName = this.productName;
-//         barcodeDoc.status = 'assigned';
-//         await barcodeDoc.save();
-//       } else {
-//         // Generate barcode image when creating new barcode
-//         const { generateAndUploadBarcodeImage } = require('../utils/generateBarcodeImage');
-//         let barcodeImageUrl = '';
-        
-//         try {
-//           const result = await generateAndUploadBarcodeImage(this.barcode);
-//           barcodeImageUrl = result.url;
-//           console.log(`✅ Generated barcode image for: ${this.barcode}`);
-//         } catch (imgError) {
-//           console.error(`Failed to generate barcode image for ${this.barcode}:`, imgError.message);
-//         }
-        
-//         barcodeDoc = await Barcode.create({
-//           barcodeNumber: this.barcode,
-//           format: 'CODE-128',
-//           productId: this._id,
-//           productSku: this.skuCode,
-//           productName: this.productName,
-//           status: 'assigned',
-//           generatedBy: this.createdBy,
-//           barcodeImageUrl: barcodeImageUrl,
-//           metadata: {
-//             prefix: this.barcode.substring(0, 3),
-//             sequence: parseInt(this.barcode.slice(-6)) || 0
-//           }
-//         });
-//       }
-//     }
-    
-//     // Store old barcode for next update
-//     this._oldBarcode = this.barcode;
 //   }
 // });
 
@@ -537,7 +361,7 @@
 
 // productSchema.virtual('stockStatus').get(function() {
 //   if (this.stockQuantity <= 0) return 'Out of Stock';
-//   if (this.stockQuantity <= 10) return 'Low Stock';
+//   if (this.stockAlertQuantity > 0 && this.stockQuantity <= this.stockAlertQuantity) return 'Low Stock';
 //   return 'In Stock';
 // });
 
@@ -546,18 +370,17 @@
 // productSchema.index({ category: 1, isActive: 1 });
 // productSchema.index({ createdAt: -1 });
 // productSchema.index({ isFeatured: 1 });
+// productSchema.index({ showOnBanner: 1 });
 // productSchema.index({ tags: 1 });
-// productSchema.index({ ageGroup: 1 });
 // productSchema.index({ regularPrice: 1 });
 // productSchema.index({ discountPrice: 1 });
 // productSchema.index({ skuCode: 1 });
 // productSchema.index({ barcode: 1 });
+// productSchema.index({ unit: 1 });
 
-// // Check if model already exists (following your pattern)
+// // Check if model already exists
 // const Product = mongoose.models.Product || mongoose.model('Product', productSchema);
-
 // const CounterModel = mongoose.models.Counter || mongoose.model('Counter', counterSchema);
-
 
 // module.exports = Product;
 // module.exports.Counter = CounterModel;
@@ -629,6 +452,20 @@ const additionalInfoSchema = new mongoose.Schema({
     trim: true
   },
   fieldValue: {
+    type: String,
+    required: true,
+    trim: true
+  }
+});
+
+// FAQ Schema - Add this
+const faqSchema = new mongoose.Schema({
+  question: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  answer: {
     type: String,
     required: true,
     trim: true
@@ -816,6 +653,9 @@ const productSchema = new mongoose.Schema({
   // Additional Information
   additionalInfo: [additionalInfoSchema],
 
+  // FAQs - Add this
+  faqs: [faqSchema],
+
   // Meta Settings
   metaSettings: metaSettingsSchema,
 
@@ -883,7 +723,6 @@ productSchema.pre('save', async function() {
   // Generate sequential SKU - ONLY if no SKU provided and product is new
   if (!this.skuCode && this.isNew) {
     try {
-      // Find the most recent product with a SG- SKU
       const lastProduct = await this.constructor.findOne({ 
         skuCode: { $regex: /^SG-/ } 
       }).sort({ createdAt: -1 });
